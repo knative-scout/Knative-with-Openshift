@@ -118,7 +118,7 @@ oc adm policy add-cluster-role-to-user cluster-admin -z build-controller -n knat
 oc adm policy add-cluster-role-to-user cluster-admin -z controller -n knative-serving
 
 header_text "Installing Knative"
-curl -L https://storage.googleapis.com/knative-releases/serving/latest/release-lite.yaml  \
+curl -L https://github.com/knative/serving/releases/download/v0.6.0/serving.yaml  \
   | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
 
