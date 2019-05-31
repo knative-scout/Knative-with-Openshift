@@ -53,26 +53,26 @@ header_text "Starting Knative test-drive on OpenShift!"
 echo "Using oc version:"
 oc version
 
-header_text "Writing config"
-oc cluster up --write-config --skip-registry-check=true
-sed -i -e 's/"admissionConfig":{"pluginConfig":null}/"admissionConfig": {\
-    "pluginConfig": {\
-        "ValidatingAdmissionWebhook": {\
-            "configuration": {\
-                "apiVersion": "v1",\
-                "kind": "DefaultAdmissionConfig",\
-                "disable": false\
-            }\
-        },\
-        "MutatingAdmissionWebhook": {\
-            "configuration": {\
-                "apiVersion": "v1",\
-                "kind": "DefaultAdmissionConfig",\
-                "disable": false\
-            }\
-        }\
-    }\
-}/' openshift.local.clusterup/kube-apiserver/master-config.yaml
+# header_text "Writing config"
+# oc cluster up --write-config --skip-registry-check=true
+# sed -i -e 's/"admissionConfig":{"pluginConfig":null}/"admissionConfig": {\
+#     "pluginConfig": {\
+#         "ValidatingAdmissionWebhook": {\
+#             "configuration": {\
+#                 "apiVersion": "v1",\
+#                 "kind": "DefaultAdmissionConfig",\
+#                 "disable": false\
+#             }\
+#         },\
+#         "MutatingAdmissionWebhook": {\
+#             "configuration": {\
+#                 "apiVersion": "v1",\
+#                 "kind": "DefaultAdmissionConfig",\
+#                 "disable": false\
+#             }\
+#         }\
+#     }\
+# }/' openshift.local.clusterup/kube-apiserver/master-config.yaml
 
 # header_text "Starting OpenShift with 'oc cluster up'"
 # oc cluster up --server-loglevel=5  --skip-registry-check=true
@@ -83,7 +83,7 @@ oc login --insecure-skip-tls-verify=true $tempUrl -u $user -p $password
 header_text "Setting up $namespace namespace"
 oc project $namespace
 oc adm policy add-scc-to-user privileged -z default -n default
-oc label namespace default istio-injection=enabled
+oc label namespace default istio-injection=enabled 
 
 header_text "Setting up security policy for istio"
 oc adm policy add-scc-to-user anyuid -z istio-ingress-service-account -n istio-system
@@ -100,7 +100,7 @@ oc adm policy add-scc-to-user anyuid -z istio-sidecar-injector-service-account -
 oc adm policy add-cluster-role-to-user cluster-admin -z istio-galley-service-account -n istio-system
 
 header_text "Installing istio"
-curl -L https://storage.googleapis.com/knative-releases/serving/latest/istio.yaml \
+curl -L https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml  \
   | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
 
@@ -118,7 +118,7 @@ oc adm policy add-cluster-role-to-user cluster-admin -z build-controller -n knat
 oc adm policy add-cluster-role-to-user cluster-admin -z controller -n knative-serving
 
 header_text "Installing Knative"
-curl -L https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml \
+curl -L https://storage.googleapis.com/knative-releases/serving/latest/release-lite.yaml  \
   | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
 
