@@ -15,6 +15,35 @@ else
   reset=''
 fi
 
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -u|--user)
+    user="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -p|--password)
+    password="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -url|--url)
+    tempUrl="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -n|--namespace)
+    namespace="$2"
+    shift # past argument
+    shift # past value
+    ;;
+esac
+done
+
 function header_text {
   echo "$header$*$reset"
 }
@@ -45,12 +74,14 @@ sed -i -e 's/"admissionConfig":{"pluginConfig":null}/"admissionConfig": {\
     }\
 }/' openshift.local.clusterup/kube-apiserver/master-config.yaml
 
-header_text "Starting OpenShift with 'oc cluster up'"
-oc cluster up --server-loglevel=5  --skip-registry-check=true
+# header_text "Starting OpenShift with 'oc cluster up'"
+# oc cluster up --server-loglevel=5  --skip-registry-check=true
 
-header_text "Logging in as system:admin and setting up default namespace"
-oc login -u system:admin
-oc project default
+header_text "Logging in as $user"
+# oc login -u system:admin
+oc login --insecure-skip-tls-verify=true $tempUrl -u $user -p $password
+header_text "Setting up $namespace namespace"
+oc project $namespace
 oc adm policy add-scc-to-user privileged -z default -n default
 oc label namespace default istio-injection=enabled
 
@@ -87,7 +118,7 @@ oc adm policy add-cluster-role-to-user cluster-admin -z build-controller -n knat
 oc adm policy add-cluster-role-to-user cluster-admin -z controller -n knative-serving
 
 header_text "Installing Knative"
-curl -L https://storage.googleapis.com/knative-releases/serving/latest/release-lite.yaml \
+curl -L https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml \
   | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
 
