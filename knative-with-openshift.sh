@@ -83,7 +83,7 @@ oc login --insecure-skip-tls-verify=true $tempUrl -u $user -p $password
 header_text "Setting up $namespace namespace"
 oc project $namespace
 oc adm policy add-scc-to-user privileged -z default -n default
-oc label namespace default istio-injection=enabled 
+oc label namespace default istio-injection=enabled --overwrite
 
 header_text "Setting up security policy for istio"
 oc adm policy add-scc-to-user anyuid -z istio-ingress-service-account -n istio-system
