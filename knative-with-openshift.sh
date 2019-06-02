@@ -50,8 +50,13 @@ function header_text {
 
 header_text "Starting Knative test-drive on OpenShift!"
 
-echo "Using oc version:"
-oc version
+echo "User as $user"
+echo "URL as $tempUrl"
+echo "namespace as $namespace"
+echo "Password as $password"
+
+# echo "Using oc version:"
+# oc version
 
 # header_text "Writing config"
 # oc cluster up --write-config --skip-registry-check=true
@@ -79,11 +84,12 @@ oc version
 
 header_text "Logging in as $user"
 # oc login -u system:admin
+echo "Running Command oc login --insecure-skip-tls-verify=true $tempUrl -u $user -p $password"
 oc login --insecure-skip-tls-verify=true $tempUrl -u $user -p $password
 header_text "Setting up $namespace namespace"
 oc project $namespace
-oc adm policy add-scc-to-user privileged -z default -n default
-oc label namespace default istio-injection=enabled --overwrite
+oc adm policy add-scc-to-user privileged -z default -n $namespace
+oc label namespace $namespace istio-injection=enabled --overwrite
 
 header_text "Setting up security policy for istio"
 oc adm policy add-scc-to-user anyuid -z istio-ingress-service-account -n istio-system
@@ -97,15 +103,60 @@ oc adm policy add-scc-to-user anyuid -z istio-mixer-post-install-account -n isti
 oc adm policy add-scc-to-user anyuid -z istio-mixer-service-account -n istio-system
 oc adm policy add-scc-to-user anyuid -z istio-pilot-service-account -n istio-system
 oc adm policy add-scc-to-user anyuid -z istio-sidecar-injector-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z istio-galley-service-account -n istio-system
+oc adm policy add-scc-to-user anyuid -z cluster-local-gateway-service-account -n istio-system
 oc adm policy add-cluster-role-to-user cluster-admin -z istio-galley-service-account -n istio-system
 
+
+
 header_text "Installing istio"
-curl -L https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml  \
+
+
+
+# https://istio.io/docs/setup/kubernetes/install/kubernetes/
+# https://istio.io/docs/setup/kubernetes/download/
+# https://github.com/istio/istio/tree/master/install/kubernetes/helm/istio-init/files
+
+##### Commented ######
+curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-10.yaml \
+	| sed 's/LoadBalancer/NodePort/' \
+	| oc apply --filename - 
+
+curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-11.yaml \
+	| sed 's/LoadBalancer/NodePort/' \
+	| oc apply --filename - 
+
+curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-12.yaml \
+	| sed 's/LoadBalancer/NodePort/' \
+	| oc apply --filename -   
+##### Commented-- ######
+curl -L https://github.com/knative/serving/releases/download/v0.5.2/istio.yaml  \
   | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
 
+
+
 header_text "Waiting for istio to become ready"
 sleep 5; while echo && oc get pods -n istio-system | grep -v -E "(Running|Completed|STATUS)"; do sleep 5; done
+
+#######################----##########################
+
+
+oc get cm istio-sidecar-injector -n istio-system -oyaml  \
+| sed -e 's/securityContext:/securityContext:\\n      privileged: true/' \
+| oc replace -f -
+
+
+if getenforce | grep -q Disabled
+then
+    echo "SELinux is disabled, no need to restart the pod"
+else
+    echo "SELinux is enabled, restarting sidecar-injector pod"
+    oc delete pod -n istio-system -l istio=sidecar-injector
+fi
+
+###########################---####################
+
 
 header_text "Setting up security policy for knative"
 oc adm policy add-scc-to-user anyuid -z build-controller -n knative-build
@@ -124,3 +175,4 @@ curl -L https://github.com/knative/serving/releases/download/v0.6.0/serving.yaml
 
 header_text "Waiting for Knative to become ready"
 sleep 5; while echo && oc get pods -n knative-serving | grep -v -E "(Running|Completed|STATUS)"; do sleep 5; done
+ 
