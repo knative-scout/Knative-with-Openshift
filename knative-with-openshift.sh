@@ -106,20 +106,16 @@ header_text "Installing istio"
 
 ##### Commented ######
 curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-10.yaml \
-	| sed 's/LoadBalancer/NodePort/' \
 	| oc apply --filename - 
 
 curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-11.yaml \
-	| sed 's/LoadBalancer/NodePort/' \
 	| oc apply --filename - 
 
 curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-12.yaml \
-	| sed 's/LoadBalancer/NodePort/' \
-# 	| oc apply --filename -   
+	| oc apply --filename -   
 ##### Commented-- ######
 
 curl -L https://github.com/knative/serving/releases/download/v0.5.2/istio.yaml  \
-  | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
 
 
@@ -162,7 +158,6 @@ header_text "Installing Knative"
 
 ########################################
 curl -L https://github.com/knative/serving/releases/download/v0.6.0/serving.yaml  \
-  | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
 
 
