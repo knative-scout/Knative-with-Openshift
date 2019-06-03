@@ -4,8 +4,7 @@ set -e
 
 # Turn colors in this script off by setting the NO_COLOR variable in your
 # environment to any value:
-#
-# $ NO_COLOR=1 test.sh
+
 NO_COLOR=${NO_COLOR:-""}
 if [ -z "$NO_COLOR" ]; then
   header=$'\e[1;33m'
@@ -55,35 +54,10 @@ echo "URL as $tempUrl"
 echo "namespace as $namespace"
 echo "Password as $password"
 
-# echo "Using oc version:"
-# oc version
 
-# header_text "Writing config"
-# oc cluster up --write-config --skip-registry-check=true
-# sed -i -e 's/"admissionConfig":{"pluginConfig":null}/"admissionConfig": {\
-#     "pluginConfig": {\
-#         "ValidatingAdmissionWebhook": {\
-#             "configuration": {\
-#                 "apiVersion": "v1",\
-#                 "kind": "DefaultAdmissionConfig",\
-#                 "disable": false\
-#             }\
-#         },\
-#         "MutatingAdmissionWebhook": {\
-#             "configuration": {\
-#                 "apiVersion": "v1",\
-#                 "kind": "DefaultAdmissionConfig",\
-#                 "disable": false\
-#             }\
-#         }\
-#     }\
-# }/' openshift.local.clusterup/kube-apiserver/master-config.yaml
-
-# header_text "Starting OpenShift with 'oc cluster up'"
-# oc cluster up --server-loglevel=5  --skip-registry-check=true
 
 header_text "Logging in as $user"
-# oc login -u system:admin
+# oc login -u system:admin  #Local cluster login 
 echo "Running Command oc login --insecure-skip-tls-verify=true $tempUrl -u $user -p $password"
 oc login --insecure-skip-tls-verify=true $tempUrl -u $user -p $password
 header_text "Setting up $namespace namespace"
