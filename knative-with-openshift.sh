@@ -91,6 +91,19 @@ header_text "Installing istio"
 # https://istio.io/docs/setup/kubernetes/download/
 # https://github.com/istio/istio/tree/master/install/kubernetes/helm/istio-init/files
 
+
+###### Commented ######
+# curl -L https://raw.githubusercontent.com/banzaicloud/istio-operator/release-1.1/config/crds/istio_v1beta1_remoteistio.yaml \
+#   | sed 's/LoadBalancer/NodePort/' \
+#   | oc apply --filename - 
+
+
+# curl -L https://raw.githubusercontent.com/banzaicloud/istio-operator/release-1.1/config/crds/istio_v1beta1_istio.yaml \
+#   | sed 's/LoadBalancer/NodePort/' \
+#   | oc apply --filename - 
+
+
+
 ##### Commented ######
 curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-10.yaml \
 	| sed 's/LoadBalancer/NodePort/' \
@@ -102,8 +115,9 @@ curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/
 
 curl -L https://raw.githubusercontent.com/istio/istio/master/install/kubernetes/helm/istio-init/files/crd-12.yaml \
 	| sed 's/LoadBalancer/NodePort/' \
-	| oc apply --filename -   
+# 	| oc apply --filename -   
 ##### Commented-- ######
+
 curl -L https://github.com/knative/serving/releases/download/v0.5.2/istio.yaml  \
   | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
@@ -121,13 +135,15 @@ oc get cm istio-sidecar-injector -n istio-system -oyaml  \
 | oc replace -f -
 
 
-if getenforce | grep -q Disabled
-then
-    echo "SELinux is disabled, no need to restart the pod"
-else
-    echo "SELinux is enabled, restarting sidecar-injector pod"
-    oc delete pod -n istio-system -l istio=sidecar-injector
-fi
+
+
+# if getenforce | grep -q Disabled
+# then
+#     echo "SELinux is disabled, no need to restart the pod"
+# else
+#     echo "SELinux is enabled, restarting sidecar-injector pod"
+#     oc delete pod -n istio-system -l istio=sidecar-injector
+# fi
 
 ###########################---####################
 
@@ -143,9 +159,14 @@ oc adm policy add-cluster-role-to-user cluster-admin -z build-controller -n knat
 oc adm policy add-cluster-role-to-user cluster-admin -z controller -n knative-serving
 
 header_text "Installing Knative"
+
+########################################
 curl -L https://github.com/knative/serving/releases/download/v0.6.0/serving.yaml  \
   | sed 's/LoadBalancer/NodePort/' \
   | oc apply --filename -
+
+
+########################################
 
 header_text "Waiting for Knative to become ready"
 sleep 5; while echo && oc get pods -n knative-serving | grep -v -E "(Running|Completed|STATUS)"; do sleep 5; done
